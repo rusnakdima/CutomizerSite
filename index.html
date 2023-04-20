@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customizer Site</title>
+  <script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="draggabilly.pkgd.js"></script>
+  <script type="text/javascript" src="draggabilly.pkgd.min.js"></script>
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  <style>
+    :root {
+      --color: 0, 0, 0;
+      --image: none;
+      --background: 255, 255, 255;
+      --transparent: 1;
+      --backBlockColor: 255, 255, 255;
+      --borderCol: transparent;
+      --borderWidth: 1px;
+      --butBack: 255, 255, 255;
+      --butCol: 0, 0, 0;
+    }
+
+    input,
+    button {
+      font-size: 15pt;
+    }
+
+    body {
+      font-size: 25pt;
+      color: rgb(var(--color));
+      background-color: rgb(var(--background));
+      background-image: var(--image);
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
+    #customBlock {
+      width: 400px;
+      padding: 5px;
+    }
+
+    div {
+      background-color: rgba(var(--backBlockColor), var(--transparent));
+      border-width: var(--borderWidth);
+      border-style: solid;
+      border-color: rgb(var(--borderCol));
+    }
+
+    button {
+      color: rgb(var(--butCol));
+      background-color: rgb(var(--butBack));
+    }
+
+    ion-icon {
+      color: var(--color);
+    }
+  </style>
+</head>
+
+<body>
+  <ion-icon name="settings-outline"></ion-icon>
+  <div id="customBlock">
+    <span>link on photo for background</span>
+    <input type="text" id="backImage"><br>
+    <span>color back body</span>
+    <input type="color" id="backBody"><br>
+    <span>background image/color</span>
+    <input type="checkbox" id="checkBack"><br>
+    <span>color text</span>
+    <input type="color" id="colText"><br>
+    <span>color back block</span>
+    <input type="color" id="backBlock"><br>
+    <span>value transparent</span>
+    <input type="range" id="transpVal"><br>
+    <span>color border block</span>
+    <input type="color" id="borderCol"><br>
+    <span>size border width</span>
+    <input type="number" id="borderWidth"><br>
+    <span>color back button</span>
+    <input type="color" id="backBut"><br>
+    <button id="setBut">Set theme</button>
+  </div>
+  <script>
+    let draggie = new Draggabilly('#customBlock');
+    $("ion-icon[name=settings-outline]").click(() => {
+      $("#customBlock").toggle();
+    });
+    if (localStorage["myTheme"] != undefined) {
+      var obj = JSON.parse(localStorage["myTheme"]);
+      if (obj['setBackground'])
+        $("body").css({ "background-image": obj['body'] });
+      else
+        $("body").css({ "background-color": obj['body'] });
+      $("span, p, i, b, s, sup, sub, u, li, ion-icon").css({ "color": obj['text'] });
+      $("div").css({ "background": obj['div'], "border-color": obj['borderCol'], "border-width": obj['borderWidth'] });
+      $("button").css({ "background-color": obj['buttonBack'] });
+      //Setting data from object properties to elements in block settings
+      $("#backImage").val(obj['body'].slice(4, -1));
+      $("#backBody").val(obj['body']);
+      $("#colText").val(obj['text']);
+      $("#backBlock").val(obj['div']);
+      $("#transpVal").val(obj['transparent'] * 100);
+      $("#borderCol").val(obj['borderCol']);
+      $("#borderWidth").val(obj['borderWidth']);
+      $("#backBut").val(obj['buttonBack']);
+    }
+    $("#setBut").click(() => {
+      var val;
+      // console.log($("#checkBack").prop("checked"))
+      if ($("#checkBack").prop("checked")) {
+        var link = $("#backImage").val().replaceAll("\\", "/");
+        val = "url(" + link + ")";
+        $("body").css({ "background-image": val, "background-color": "none" });
+      } else {
+        val = $("#backBody").val();
+        $("body").css({ "background-color": val, "background-image": "none" });
+      }
+      $("span, p, i, b, s, sup, sub, u, li, ion-icon").css({ "color": ($("#backBody").val() == "#000000") ? "#ffffff" : ($("#backBody").val() == "#ffffff") ? "#000000" : $("#colText").val() });
+      var aRgbHex = $("#backBlock").val().slice(1).match(/.{1,2}/g);
+      var aRgb = [
+        parseInt(aRgbHex[0], 16),
+        parseInt(aRgbHex[1], 16),
+        parseInt(aRgbHex[2], 16)
+      ];
+      // console.log(aRgb, $('#transpVal').val()/100)
+      $("div").css({ "background-color": "rgba(" + aRgb + "," + $('#transpVal').val() / 100 + ")" });
+      $("div").css({ "border-color": $("#borderCol").val() });
+      $("div").css({ "border-width": $("#borderWidth").val() });
+      $("button, [type=button]").css({ "background-color": $("#backBut").val(), "color": ($("#backBut").val() == "#000000") ? "#ffffff" : ($("#backBut").val() == "#ffffff") ? "#000000" : $("#colText").val() })
+      var obj = {
+        "body": val,
+        "text": $("#colText").val(),
+        "div": "rgba(" + aRgb + "," + $('#transpVal').val() / 100 + ")",
+        "borderCol": $("#borderCol").val(),
+        "borderWidth": $("#borderWidth").val(),
+        "transparent": $('#transpVal').val() / 100,
+        "buttonBack": $("#backBut").val(),
+        "setBackground": $("#checkBack").prop("checked")
+      }
+      localStorage["myTheme"] = JSON.stringify(obj);
+    });
+  </script>
+</body>
+
+</html>
